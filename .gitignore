@@ -1,0 +1,27 @@
+# Common ignores
+
+# Node
+node_modules/
+dist/
+.env
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Logs
+logs/
+*.log
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Build
+build/
+
+# Temporary
+*.tmp
