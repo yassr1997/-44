@@ -69,4 +69,60 @@ git push -u origin feature/first-note
 
 ---
 
+## Building required tools (aircrack‑ng and hcxtools)
+To perform capture conversions and hash extraction (e.g., cap2hccapx, hcxpcapngtool) you may need to build/install aircrack‑ng and hcxtools. Below are tested commands for Ubuntu/Debian and macOS.
+
+Important: Only run these steps on systems and networks you are authorized to test. Do not use these tools against networks you do not own or without explicit permission.
+
+### Ubuntu / Debian / WSL (recommended)
+```bash
+sudo apt update
+sudo apt install -y build-essential autoconf automake libtool pkg-config libssl-dev libnl-3-dev libnl-genl-3-dev libpcap-dev git
+
+# Build aircrack-ng (provides cap2hccapx)
+git clone https://github.com/aircrack-ng/aircrack-ng.git
+cd aircrack-ng
+autoreconf -i
+./configure
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+cd ..
+
+# Build hcxtools (recommended for hcxpcapngtool -> 22000)
+git clone https://github.com/ZerBea/hcxtools.git
+cd hcxtools
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+cd ..
+
+# Convert examples:
+# hcxpcapngtool produces the modern hashcat 22000 format
+hcxpcapngtool -o hackme.22000 hackme.cap
+# cap2hccapx produces hccapx (older format)
+cap2hccapx hackme.cap hackme.hccapx
+```
+
+### macOS (Homebrew)
+```bash
+brew update
+brew install aircrack-ng hashcat
+# hcxtools may not be available in main taps; build from source if needed
+git clone https://github.com/ZerBea/hcxtools.git
+cd hcxtools
+make
+sudo make install
+```
+
+### Quick checks
+- Verify converter tools exist: `which cap2hccapx` and `which hcxpcapngtool`.
+- Inspect capture for EAPOL frames to ensure handshake exists:
+  `tshark -r hackme.cap -Y "eapol" -T fields -e frame.number -e wlan.sa -e wlan.da | head`
+- Use `aircrack-ng hackme.cap` to list networks and detected handshakes.
+
+If you prefer automation, there's a build script in this repo: `scripts/build_tools.sh` — run it on Ubuntu/Debian to build both aircrack-ng and hcxtools.
+
+---
+
 © 2026 yassr1997
